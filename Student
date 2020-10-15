@@ -1,0 +1,29 @@
+import java.util.ArrayList;
+
+public class Student {
+    private int studentID;
+    private String name;
+    public ArrayList<Course> enlistedCourses;
+
+    Student(String name, int studentID) {
+        this.studentID = studentID;
+        this.name = name;
+        enlistedCourses = new ArrayList<>();
+    }
+    boolean enlistedCourses(Course course){
+        if (enlistedCourses.contains(course))
+            return false;
+        enlistedCourses.add(course);
+        return true;
+        }
+
+
+    public int getStudentID() {
+        return studentID;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+}
