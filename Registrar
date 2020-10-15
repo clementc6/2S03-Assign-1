@@ -1,0 +1,114 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class Registrar {
+
+    public Registrar() {
+    }
+    public void runCommands(){
+        //Created HashMap's for course & student lists for easy accessibility
+        Scanner keyboard = new Scanner(System.in);
+        HashMap<String, Course> courselist = new HashMap<String, Course>();
+        HashMap<Integer, Student> studentlist = new HashMap<Integer, Student>();
+        HashMap<String, Course> reqlist = new HashMap<>();
+
+        while (keyboard.hasNext()){
+            String line = keyboard.nextLine();
+
+            //Appends course into Hash & creates new Course
+            //Uses the inputted course string as a Key
+            if (line.startsWith("COURSE")) {
+                String[] courseLine = line.split(" ");
+                String coursename = courseLine[1];
+                courselist.put(coursename, new Course(coursename));
+            }
+            //Appends student's ID into Hash and creates new Student
+            //Uses the inputted student ID as a Key
+            else if (line.startsWith("STUDENT")){
+                String[] studentLine = line.split(" ");
+                String stuname = studentLine[1];
+                int stuid = Integer.parseInt(studentLine[2]);
+                studentlist.put(stuid, new Student(stuname, stuid));
+            }
+
+            else if (line.startsWith("REQUIREMENT")){
+                String[] requireLine = line.split(" ");
+                String courseA = line.split(" ")[1];
+                String b = line.split( " ")[2];
+                Course courseB = courselist.get(b);
+                reqlist.put(courseA, courseB);
+            }
+            //Uses inputted course name as a key to retrieve course code
+            //Adds a section into the course code which creates new Section
+            //Will return NULL if course isn't found in HashMap
+            else if (line.startsWith("SECTION")){
+                String[] sectionLine = line.split(" ");
+                String courseName = sectionLine[1];
+                Course coursee = courselist.get(courseName);
+                String secName = sectionLine[2];
+                int secMax = Integer.parseInt(sectionLine[3]);
+                coursee.addSection(new Section(secName, secMax));
+            }
+            //Uses course and student hashmaps to retrieve Values
+            //These Values then are put into enrollmentResult & printEnrollmentResult
+            //Both hashmaps will return NULL if course or student isn't found in HashMap
+            else if (line.startsWith("ENROLL")){
+                String[] enrollLine = line.split(" ");
+                String cours = enrollLine[2];
+                Course courseName = courselist.get(cours);
+                int studentId = Integer.parseInt(enrollLine[1]);
+                Student student = studentlist.get(studentId);
+                String secName = enrollLine[3];
+                //Used to check if req hashmap has a course with a requirement
+                //Nested-if checks if student is enrolled in req course
+                if (reqlist.containsKey(cours)) {
+                    if (student.enlistedCourses.contains(reqlist.get(cours))) {
+                        boolean enrollmentResult = courseName.enrollStudent(student, secName);
+                        TerminalPrinter.printEnrollmentResult(enrollmentResult, student.getName(),
+                                courseName.getUniqueName(), secName);
+                        student.enlistedCourses(courseName);
+                    } else {
+                        TerminalPrinter.printEnrollmentResult(false, student.getName(),
+                                courseName.getUniqueName(), secName);
+                    }
+                } else {
+                    boolean enrollmentResult = courseName.enrollStudent(student, secName);
+                    TerminalPrinter.printEnrollmentResult(enrollmentResult, student.getName(),
+                            courseName.getUniqueName(), secName);
+                    student.enlistedCourses(courseName); //adds courseName into student's enlistedCourse array
+                }
+            }
+            //Similar to ENROLL section above
+            else if (line.startsWith("UNENROLL")){
+                String[] unenrollLine = line.split(" ");
+                String cours = unenrollLine[2];
+                Course courseName = courselist.get(cours);
+                int studentId = Integer.parseInt(unenrollLine[1]);
+                Student student = studentlist.get(studentId);
+                String secName = unenrollLine[3];
+                //Iterating through our req hashmap for each key's value (required course)
+                //Nested-if checks if
+                for (String key : reqlist.keySet()){
+                    if (reqlist.get(key) == courseName){
+                        if (student.enlistedCourses.contains(key)){
+                            TerminalPrinter.printUnenrollmentResult(false, student.getName(),
+                                    courseName.getUniqueName(), secName);
+                        }
+                    } else {
+                        boolean enrollmentResult = courseName.unenrollStudent(student, secName);
+                        TerminalPrinter.printUnenrollmentResult(enrollmentResult, student.getName(),
+                                courseName.getUniqueName(), secName);
+                        student.enlistedCourses.remove(courseName);
+
+                    }
+                }
+            }
+            else if (line.startsWith("FINISH")){
+                break;
+            }
+        }
+
+    }
+}
+
